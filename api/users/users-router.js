@@ -1,6 +1,7 @@
 const express = require('express');
 const model = require('./users-model')
-const {validateUserId, validateUser} = require('../middleware/middleware');
+const otherModel = require('../posts/posts-model')
+const {validateUserId, validateUser, validatePost} = require('../middleware/middleware');
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get('/users', (req, res) => {
     })
 });
 
-router.get('/users/:id', validateUserId(), (req, res, next) => {
+router.get('/users/:id', validateUserId(), (req, res) => {
   // RETURN THE USER OBJECT
   // this needs a middleware to verify user id
   res.json(req.user);
@@ -52,27 +53,36 @@ router.delete('/users/:id', validateUserId(), (req, res) => {
   // this needs a middleware to verify user id
   model.remove(req.params.id)
 	.then((count)=>{
-		// console.log(res)
-		console.log("5")
 		res.status(200).json(count)
 		})
     .catch(()=>{
-		console.log("6")
       res.status(500).json({
 		  message: "The server encountered an error"
 	  })
     })
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/users/:id/posts', validateUserId(), (req, res) => {
   // RETURN THE ARRAY OF USER POSTS
   // this needs a middleware to verify user id
+  model.getUserPosts(req.params.id)
+  	.then((posts)=>{
+		if(posts){res.status(200).json(posts)}
+		else{res.status(404).json({message:"User has no posts"})}
+		})
+  	.catch(()=>{
+		res.status(500).json({message:"Server encountered an error"})
+	  })
 });
 
-router.post('/:id/posts', (req, res) => {
-  // RETURN THE NEWLY CREATED USER POST
-  // this needs a middleware to verify user id
-  // and another middleware to check that the request body is valid
+router.post('/users/:id/posts', validateUserId(),validatePost(), (req, res) => {
+  otherModel.insert(req.body)
+  	.then((post)=>{
+		  res.status(200).json(post)
+	  })
+  	.catch(()=>{
+		  res.status(500).json({message:"Server Error"})
+	  })
 });
 
 // do not forget to export the router

@@ -10,21 +10,20 @@ function logger(req, res, next) {
 
 function validateUserId() {
   return (req,res,next)=>{
-              console.log("1")
-              console.log("test'")
+    console.log("a")
     users.getById(req.params.id)
       .then(user=>{
           if(user){
-              console.log("2")
+            console.log("b")
             req.user = user; 
             next();
           }else{
-              console.log("3")
+            console.log("c")
             res.status(404).json({message:"Cannot find a resource with that ID"})
             }
         })
       .catch(err=>{
-              console.log("4")
+        console.log("d")
         res.status(500).json({message:"Server experienced an error"})
         })
 }}
@@ -44,6 +43,16 @@ function validateUser() {
 function validatePost(req, res, next) {
   // DO YOUR MAGIC
   //save the post like user?
+  return (req,res,next)=>{
+    console.log("e")
+    if(!req.body.text){
+      return res.status(400).json({message: "Missing text"})
+    }
+    if(!req.body){
+      return res.status(400).json({message:'Missing body'})
+    }
+    next();
+  }
 }
 
 // do not forget to expose these functions to other modules
@@ -52,5 +61,5 @@ module.exports = {
   logger,
   validateUserId,
   validateUser,
-  // validatePost
+  validatePost
 }
